@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Camera mCamera;
     private CameraPreview mPreview;
+    private BgView bgView;
 
 
     @Override
@@ -50,9 +51,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Create our Preview view and set it as the content of our activity.
         mPreview = new CameraPreview(this, mCamera);
+        bgView=new BgView(this);
         FrameLayout preview = (FrameLayout)findViewById(R.id.camera_preview);
        // TextView tv=(TextView) findViewById(R.id.relative_view).findViewById(R.id.textView);
         //tv.setText("fffffsdfsdfds");
+        preview.addView(bgView);
         preview.addView(mPreview);
 
 
