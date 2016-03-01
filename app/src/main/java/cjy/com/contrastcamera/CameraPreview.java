@@ -1,6 +1,7 @@
 package cjy.com.contrastcamera;
-import android.hardware.Camera;
+
 import android.content.Context;
+import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -9,9 +10,9 @@ import java.io.IOException;
 
 /** A basic Camera preview class */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+    String TAG = "cjydebug";
     private SurfaceHolder mHolder;
     private Camera mCamera;
-    String TAG="debug";
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
@@ -67,4 +68,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
     }
+
+
 }
