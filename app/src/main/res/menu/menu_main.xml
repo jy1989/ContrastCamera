@@ -12,4 +12,12 @@
         android:orderInCategory="100"
         android:title="@string/load_background"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/merger_bg"
+        android:orderInCategory="100"
+        android:title="@string/merger_bg"
+
+        android:checkable="true"
+        />
+
 </menu>

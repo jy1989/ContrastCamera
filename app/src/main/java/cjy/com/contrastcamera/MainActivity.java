@@ -42,10 +42,14 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton captureButton;
     private FloatingActionButton frontbackButton;
     private int RESULT_LOAD_IMAGE = 1989;
+    private boolean isMerger=false;
+    private static  Bitmap bgBitmap=null;
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
 
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
+
+            Snackbar.make(preview,"gening!!", Snackbar.LENGTH_LONG).show();
 
             File pictureFile = Util.getOutputMediaFile(Util.MEDIA_TYPE_IMAGE);
             if (pictureFile == null) {
@@ -76,7 +80,9 @@ public class MainActivity extends AppCompatActivity {
 
                 Bitmap bitmap = Util.Bytes2Bimap(data);
                 bitmap = Util.rotate(bitmap, rotation);
-
+                if(isMerger){
+                    bitmap=Util.toConformBitmap(bgBitmap,bitmap);
+                }
 
                 FileOutputStream fos = new FileOutputStream(pictureFile);
 
@@ -84,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 fos.write(Util.Bitmap2Bytes(bitmap));
                 fos.close();
 
-                Snackbar.make(preview, "done!" + pictureFile.getAbsolutePath(), Snackbar.LENGTH_SHORT)
+                Snackbar.make(preview, pictureFile.getAbsolutePath(), Snackbar.LENGTH_SHORT)
                         .setAction("Ok", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -283,6 +289,8 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(choosePictureIntent, RESULT_LOAD_IMAGE);
             return true;
 
+        }else if(id==R.id.merger_bg){
+            isMerger=item.isChecked();
         }
 
         return super.onOptionsItemSelected(item);
@@ -299,12 +307,12 @@ public class MainActivity extends AppCompatActivity {
             if (data != null) {
 
                 Uri dataUri = data.getData();
-                Bitmap bitmap = null;
+               // Bitmap bitmap = null;
                 try {
-                    bitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), dataUri);
-                    bitmap = Util.compress(bitmap);
-                    bitmap = Util.adjustOpacity(bitmap, 100);
-                    mImageView.setImageBitmap(bitmap);
+                    bgBitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), dataUri);
+                    bgBitmap = Util.compress(bgBitmap);
+                    bgBitmap = Util.adjustOpacity(bgBitmap, 100);
+                    mImageView.setImageBitmap(bgBitmap);
                     //mImageView.getBackground().setAlpha(100);
                     mAttacher.update();
                 } catch (IOException e) {
