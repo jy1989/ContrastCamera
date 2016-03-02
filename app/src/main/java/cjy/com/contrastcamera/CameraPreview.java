@@ -2,17 +2,21 @@ package cjy.com.contrastcamera;
 
 import android.content.Context;
 import android.hardware.Camera;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.orhanobut.logger.Logger;
+
 import java.io.IOException;
 
-/** A basic Camera preview class */
+/**
+ * A basic Camera preview class
+ */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
-    String TAG = "cjydebug";
+
     private SurfaceHolder mHolder;
     private Camera mCamera;
+
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
@@ -25,6 +29,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // deprecated setting, but required on Android versions prior to 3.0
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         // The Surface has been created, now tell the camera where to draw the preview.
@@ -32,19 +37,21 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.setPreviewDisplay(holder);
             mCamera.startPreview();
         } catch (IOException e) {
-            Log.d(TAG, "Error setting camera preview: " + e.getMessage());
+            Logger.wtf("Error setting camera preview: " + e.getMessage());
         }
     }
+
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         // empty. Take care of releasing the Camera preview in your activity.
     }
+
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         // If your preview can change or rotate, take care of those events here.
         // Make sure to stop the preview before resizing or reformatting it.
 
-        if (mHolder.getSurface() == null){
+        if (mHolder.getSurface() == null) {
             // preview surface does not exist
             return;
         }
@@ -52,8 +59,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // stop preview before making changes
         try {
             mCamera.stopPreview();
-        } catch (Exception e){
-            // ignore: tried to stop a non-existent preview
+        } catch (Exception e) {
+            Logger.wtf("Error stopPreview camera preview: " + e.getMessage());
         }
 
         // set preview size and make any resize, rotate or
@@ -64,8 +71,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
 
-        } catch (Exception e){
-            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+        } catch (Exception e) {
+            Logger.wtf("Error starting camera preview: " + e.getMessage());
         }
     }
 

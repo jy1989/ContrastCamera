@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">ContrastCamera</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">设置</string>
     <string name="load_background">读取背景</string>
 </resources>
