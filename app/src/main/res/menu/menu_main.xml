@@ -2,11 +2,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="cjy.com.contrastcamera.MainActivity">
-    <item
+    <!--<item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
-        app:showAsAction="never" />
+        app:showAsAction="never" />-->
     <item
         android:id="@+id/load_background"
         android:orderInCategory="100"
@@ -14,10 +14,10 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/merger_bg"
-        android:orderInCategory="100"
-        android:title="@string/merger_bg"
-
         android:checkable="true"
+        android:orderInCategory="100"
+
+        android:title="@string/merger_bg"
         />
 
 </menu>
