@@ -13,10 +13,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Surface;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -65,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
             try {
 
-
+                /*
                 Display display = getWindowManager().getDefaultDisplay();
                 int rotation = 0;
                 switch (display.getRotation()) {
@@ -82,7 +80,12 @@ public class MainActivity extends AppCompatActivity {
                         rotation = 180;
                         break;
                 }
-
+                */
+                int rotation = 90;
+                if (CURRENT_CAM == Util.USE_FRONT_CAM) {
+                    rotation = 270;
+                }
+                //Logger.e(rotation+" "+CURRENT_CAM+" "+Util.USE_FRONT_CAM);
                 Bitmap bitmap = Util.Bytes2Bimap(data);
                 bitmap = Util.rotate(bitmap, rotation);
                 if (isMerger) {
@@ -345,12 +348,7 @@ public class MainActivity extends AppCompatActivity {
                             //releaseCamera();
                             //preview.removeView(mPreview,0);
                             releaseCamera();
-                            mCamera = getCameraInstance();
-                            //Camera.Parameters parameters = mCamera.getParameters();
-                            // Create our Preview view and set it as the content of our activity.
-                            mPreview = new CameraPreview(MainActivity.this, mCamera);
-                            preview.removeViewAt(0);
-                            preview.addView(mPreview, 0);
+                            resumeCamera();
                         }
                     }
             );
@@ -380,8 +378,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (mCamera == null) {
             mCamera = getCameraInstance();
-        } else {
-            mCamera.startPreview();
+            mPreview = new CameraPreview(MainActivity.this, mCamera);
+            preview.removeViewAt(0);
+            preview.addView(mPreview, 0);
         }
 
        /* if(mCamera!=null){
@@ -394,7 +393,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        //releaseCamera();              // release the camera immediately on pause event
+        releaseCamera();              // release the camera immediately on pause event
     }
 
     private void releaseCamera() {
@@ -453,8 +452,11 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     bgBitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), dataUri);
                     bgBitmap = Util.compress(bgBitmap);
-                    bgBitmap = Util.adjustOpacity(bgBitmap, 100);
-                    mImageView.setImageBitmap(bgBitmap);
+                    //bgBitmap = Util.adjustOpacity(bgBitmap, 101);
+                    Bitmap mBitmap = bgBitmap;
+                    mBitmap = Util.adjustOpacity(mBitmap, 101);
+                    //mBitmap=Util.gray2Binary(mBitmap);
+                    mImageView.setImageBitmap(mBitmap);
                     //mImageView.getBackground().setAlpha(100);
                     mAttacher.update();
                 } catch (IOException e) {
