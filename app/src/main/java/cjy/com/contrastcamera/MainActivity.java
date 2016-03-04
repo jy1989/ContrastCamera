@@ -8,7 +8,6 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.orhanobut.logger.Logger;
@@ -42,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private Camera mCamera;
     private CameraPreview mPreview;
     //private BgView bgView;
-    private FloatingActionButton captureButton;
-    private FloatingActionButton frontbackButton;
+    private ImageButton captureButton;
+    private ImageButton frontbackButton;
     private int RESULT_LOAD_IMAGE = 1989;
     private boolean isMerger = false;
     //private Camera.Parameters parameters = null;
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
             /**
              * El preview debe tener el mismo ratio
              */
-            Logger.e("presize: " + size.width + "," + size.height + ", preview: " + width + "," + height + " " + ((float) size.width / size.height) + "," + ((float) width / height));
+            //Logger.e("presize: " + size.width + "," + size.height + ", preview: " + width + "," + height + " " + ((float) size.width / size.height) + "," + ((float) width / height));
             // Logger.e(sizeMap.toString());
             if ((float) size.width / size.height == (float) width / height) {
                 sizeMap.put("previewWidth", size.width);
@@ -321,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
             // Attach a PhotoViewAttacher, which takes care of all of the zooming functionality.
             mAttacher = new PhotoViewAttacher(mImageView);
 
-            captureButton = (FloatingActionButton) findViewById(R.id.button_capture);
+            captureButton = (ImageButton) findViewById(R.id.button_capture);
             captureButton.setOnClickListener(
                     new View.OnClickListener() {
                         @Override
@@ -332,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
                     }
             );
 
-            frontbackButton = (FloatingActionButton) findViewById(R.id.button_frontback);
+            frontbackButton = (ImageButton) findViewById(R.id.button_frontback);
             frontbackButton.setOnClickListener(
                     new View.OnClickListener() {
                         @Override

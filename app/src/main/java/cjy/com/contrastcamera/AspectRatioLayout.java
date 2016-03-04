@@ -39,9 +39,9 @@ public class AspectRatioLayout extends FrameLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        Logger.e("onMeasure target=" + mTargetAspect +
-                " width=[" + MeasureSpec.toString(widthMeasureSpec) +
-                "] height=[" + MeasureSpec.toString(heightMeasureSpec) + "]");
+        // Logger.e("onMeasure target=" + mTargetAspect +
+        //        " width=[" + MeasureSpec.toString(widthMeasureSpec) +
+        //       "] height=[" + MeasureSpec.toString(heightMeasureSpec) + "]");
 
         // Target aspect ratio will be < 0 if it hasn't been set yet.  In that case,
         // we just use whatever we've been handed.
@@ -62,8 +62,8 @@ public class AspectRatioLayout extends FrameLayout {
                 // We're very close already.  We don't want to risk switching from e.g. non-scaled
                 // 1280x720 to scaled 1280x719 because of some floating-point round-off error,
                 // so if we're really close just leave it alone.
-                Logger.e("aspect ratio is good (target=" + mTargetAspect +
-                        ", view=" + initialWidth + "x" + initialHeight + ")");
+                // Logger.e("aspect ratio is good (target=" + mTargetAspect +
+                //        ", view=" + initialWidth + "x" + initialHeight + ")");
             } else {
                 if (aspectDiff > 0) {
                     // limited by narrow width; restrict height
@@ -72,8 +72,8 @@ public class AspectRatioLayout extends FrameLayout {
                     // limited by short height; restrict width
                     initialWidth = (int) (initialHeight * mTargetAspect);
                 }
-                Logger.e("new size=" + initialWidth + "x" + initialHeight + " + padding " +
-                        horizPadding + "x" + vertPadding);
+                //Logger.e("new size=" + initialWidth + "x" + initialHeight + " + padding " +
+                //         horizPadding + "x" + vertPadding);
                 initialWidth += horizPadding;
                 initialHeight += vertPadding;
                 widthMeasureSpec = MeasureSpec.makeMeasureSpec(initialWidth, MeasureSpec.EXACTLY);
