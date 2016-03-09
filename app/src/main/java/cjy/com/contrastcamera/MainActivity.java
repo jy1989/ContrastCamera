@@ -9,16 +9,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.orhanobut.logger.Logger;
+
+import org.xutils.view.annotation.ContentView;
+import org.xutils.view.annotation.Event;
+import org.xutils.view.annotation.ViewInject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,23 +32,28 @@ import java.util.Map;
 
 import uk.co.senab.photoview.PhotoViewAttacher;
 
-public class MainActivity extends AppCompatActivity {
+@ContentView(R.layout.activity_main)
+public class MainActivity extends BaseActivity {
 
     private static final int CAMERA_MIN_WIDTH = 1500;
     private static final int CAMERA_MAX_WIDTH = 2500;
     private static Bitmap bgBitmap = null;
     protected int CURRENT_CAM = Util.USE_BACKGROUND_CAM;
-    AspectRatioLayout preview = null;
     ImageView mImageView;
     PhotoViewAttacher mAttacher;
+    @ViewInject(R.id.camera_preview)
+    private AspectRatioLayout preview;
+    @ViewInject(R.id.toolbar)
+    private Toolbar toolbar;
     private Camera mCamera;
     private CameraPreview mPreview;
     //private BgView bgView;
-    private ImageButton captureButton;
-    private ImageButton frontbackButton;
+    //private ImageButton captureButton;
+    //private ImageButton frontbackButton;
     private int RESULT_LOAD_IMAGE = 1989;
     private boolean isMerger = false;
     //private Camera.Parameters parameters = null;
+
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
 
         @Override
@@ -197,8 +204,8 @@ public class MainActivity extends AppCompatActivity {
         parameters.setPictureSize(width, height);
         parameters.setPreviewSize(previewWidth, previewHeight);
 
-        Logger.e("picture size: " + parameters.getPictureSize().width + "x" + parameters.getPictureSize().height);
-        Logger.e("preview size: " + parameters.getPreviewSize().width + "x" + parameters.getPreviewSize().height);
+        //Logger.e("picture size: " + parameters.getPictureSize().width + "x" + parameters.getPictureSize().height);
+        //Logger.e("preview size: " + parameters.getPreviewSize().width + "x" + parameters.getPreviewSize().height);
         //mCamera.setParameters(parameters);
 
         //setCameraDisplayOrientation();
@@ -284,89 +291,61 @@ public class MainActivity extends AppCompatActivity {
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
     }
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        Logger.init(Util.TAG);
-
-        Logger.e("oncreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setContentView(R.layout.activity_main);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        preview = (AspectRatioLayout) findViewById(R.id.camera_preview);
-
+        //preview = (AspectRatioLayout) findViewById(R.id.camera_preview);
         // Create an instance of Camera
         mCamera = getCameraInstance();
         if (mCamera != null) {
             //Camera.Parameters parameters = mCamera.getParameters();
-
-
             // Create our Preview view and set it as the content of our activity.
             mPreview = new CameraPreview(this, mCamera);
-
-
             // TextView tv=(TextView) findViewById(R.id.relative_view).findViewById(R.id.textView);
             //tv.setText("fffffsdfsdfds");
 
             //preview.addView(mPreview);
             mImageView = new ImageView(this);
-
             preview.addView(mPreview, 0);
             preview.addView(mImageView, 1);
             // Set the Drawable displayed
             //Drawable bitmap = getResources().getDrawable(R.drawable.wallpaper);
 
-
             // Attach a PhotoViewAttacher, which takes care of all of the zooming functionality.
             mAttacher = new PhotoViewAttacher(mImageView);
-
-            captureButton = (ImageButton) findViewById(R.id.button_capture);
-            captureButton.setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            // get an image from the camera
-                            mCamera.takePicture(null, null, mPicture);
-                        }
-                    }
-            );
-
-            frontbackButton = (ImageButton) findViewById(R.id.button_frontback);
-            frontbackButton.setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            // get an image from the camera
-                            if (CURRENT_CAM == Util.USE_BACKGROUND_CAM) {
-                                CURRENT_CAM = Util.USE_FRONT_CAM;
-                            } else {
-                                if (CURRENT_CAM == Util.USE_FRONT_CAM) {
-                                    CURRENT_CAM = Util.USE_BACKGROUND_CAM;
-                                }
-                            }
-                            //releaseCamera();
-                            //preview.removeView(mPreview,0);
-                            releaseCamera();
-                            resumeCamera();
-                        }
-                    }
-            );
 
 
         }
 
-/*
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        */
     }
+
+    @Event(R.id.button_frontback)
+    private void clickCapture(View view) {
+        mCamera.takePicture(null, null, mPicture);
+
+    }
+
+
+    @Event(R.id.button_frontback)
+    private void clickChangeFrontBack(View view) {
+
+        if (CURRENT_CAM == Util.USE_BACKGROUND_CAM) {
+            CURRENT_CAM = Util.USE_FRONT_CAM;
+        } else {
+            if (CURRENT_CAM == Util.USE_FRONT_CAM) {
+                CURRENT_CAM = Util.USE_BACKGROUND_CAM;
+            }
+        }
+        releaseCamera();
+        resumeCamera();
+
+
+    }
+
 
     @Override
     protected void onResume() {
