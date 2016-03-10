@@ -3,7 +3,10 @@ package cjy.com.contrastcamera;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Environment;
@@ -89,9 +92,25 @@ public class Util {
         return Bitmap.createBitmap(in, 0, 0, in.getWidth(), in.getHeight(), mat, true);
     }
 
-    public static Bitmap compress(Bitmap image) {
+    public static Bitmap compressImage(Bitmap image) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);// 质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+        int options = 100;
+        while (baos.toByteArray().length / 1024 > 100) { // 循环判断如果压缩后图片是否大于100kb,大于继续压缩
+            baos.reset();// 重置baos即清空baos
+            image.compress(Bitmap.CompressFormat.JPEG, options, baos);// 这里压缩options%，把压缩后的数据存放到baos中
+            options -= 10;// 每次都减少10
+            if (options <= 0) break;
+        }
+        ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());// 把压缩后的数据baos存放到ByteArrayInputStream中
+        Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);// 把ByteArrayInputStream数据生成图片
+        return bitmap;
+    }
+
+
+    public static Bitmap compressBitmap(Bitmap image) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.JPEG, 70, out);
+        image.compress(Bitmap.CompressFormat.JPEG, 50, out);
         BitmapFactory.Options newOpts = new BitmapFactory.Options();
         int be = 2;
         newOpts.inSampleSize = be;
@@ -130,6 +149,7 @@ public class Util {
         return newbmp;
     }
 
+
     // 该函数实现对图像进行二值化处理
     public static Bitmap gray2Binary(Bitmap graymap) {
         //得到图形的宽度和长度
@@ -164,6 +184,65 @@ public class Util {
             }
         }
         return binarymap;
+    }
+
+    public static Bitmap lineGrey(Bitmap image) {
+        //得到图像的宽度和长度
+        int width = image.getWidth();
+        int height = image.getHeight();
+        //创建线性拉升灰度图像
+        Bitmap linegray = null;
+        linegray = image.copy(Bitmap.Config.ARGB_8888, true);
+        //依次循环对图像的像素进行处理
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                //得到每点的像素值
+                int col = image.getPixel(i, j);
+                int alpha = col & 0xFF000000;
+                int red = (col & 0x00FF0000) >> 16;
+                int green = (col & 0x0000FF00) >> 8;
+                int blue = (col & 0x000000FF);
+                // 增加了图像的亮度
+                red = (int) (1.1 * red + 30);
+                green = (int) (1.1 * green + 30);
+                blue = (int) (1.1 * blue + 30);
+                //对图像像素越界进行处理
+                if (red >= 255) {
+                    red = 255;
+                }
+
+                if (green >= 255) {
+                    green = 255;
+                }
+
+                if (blue >= 255) {
+                    blue = 255;
+                }
+                // 新的ARGB
+                int newColor = alpha | (red << 16) | (green << 8) | blue;
+                //设置新图像的RGB值
+                linegray.setPixel(i, j, newColor);
+            }
+        }
+        return linegray;
+    }
+
+    public static Bitmap bitmap2Gray(Bitmap bmSrc) {
+        // 得到图片的长和宽
+        int width = bmSrc.getWidth();
+        int height = bmSrc.getHeight();
+        // 创建目标灰度图像
+        Bitmap bmpGray = null;
+        bmpGray = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        // 创建画布
+        Canvas c = new Canvas(bmpGray);
+        Paint paint = new Paint();
+        ColorMatrix cm = new ColorMatrix();
+        cm.setSaturation(0);
+        ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
+        paint.setColorFilter(f);
+        c.drawBitmap(bmSrc, 0, 0, paint);
+        return bmpGray;
     }
 
 }

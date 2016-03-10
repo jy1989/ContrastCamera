@@ -28,6 +28,25 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
 
+        <fr.castorflex.android.smoothprogressbar.SmoothProgressBar xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/progressbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:spb_color="#FF0000"
+            app:spb_mirror_mode="false"
+            app:spb_progressiveStart_activated="true"
+            app:spb_progressiveStart_speed="1.5"
+            app:spb_progressiveStop_speed="3.4"
+            app:spb_reversed="false"
+            app:spb_sections_count="4"
+            app:spb_speed="2.0"
+            app:spb_stroke_separator_length="4dp"
+            app:spb_stroke_width="4dp" />
+
+
         <cjy.com.contrastcamera.AspectRatioLayout
             android:id="@+id/camera_preview"
             android:layout_width="match_parent"
@@ -38,6 +57,41 @@
 
         </cjy.com.contrastcamera.AspectRatioLayout>
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/checkBox_grey"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:checked="false"
+                android:text="grey" />
+
+            <CheckBox
+                android:id="@+id/checkBox_merge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:checked="true"
+                android:text="merge" />
+
+            <SeekBar
+                android:id="@+id/seekBar_bg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="5"
+                android:indeterminate="false"
+                android:longClickable="false"
+                android:max="255"
+                android:progress="100" />
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -47,7 +101,7 @@
             <ImageButton
                 android:id="@+id/button_frontback"
                 android:layout_width="55dp"
-                android:layout_height="55dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
                 android:background="#00ffffff"
                 android:scaleType="fitCenter"
@@ -56,15 +110,26 @@
             <ImageButton
                 android:id="@+id/button_capture"
                 android:layout_width="55dp"
-                android:layout_height="55dp"
+                android:layout_height="40dp"
                 android:layout_weight="1"
                 android:background="#00ffffff"
                 android:scaleType="fitCenter"
                 android:src="@android:drawable/ic_menu_camera" />
 
-        </LinearLayout>
+            <ImageButton
+                android:id="@+id/button_pickpic"
+                android:layout_width="55dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:background="#00ffffff"
+                android:scaleType="fitCenter"
+                android:src="@android:drawable/ic_menu_gallery" />
 
+
+        </LinearLayout>
     </LinearLayout>
+
+
     <!--
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/button_capture"

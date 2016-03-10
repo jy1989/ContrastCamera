@@ -7,6 +7,8 @@ import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
@@ -14,7 +16,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 
 import com.orhanobut.logger.Logger;
 
@@ -37,23 +42,48 @@ public class MainActivity extends BaseActivity {
 
     private static final int CAMERA_MIN_WIDTH = 1500;
     private static final int CAMERA_MAX_WIDTH = 2500;
-    private static Bitmap bgBitmap = null;
+    private static int RESULT_LOAD_IMAGE = 1989;
+    private static int SHOW_PB = 1990;
+    private static int HIDE_PB = 1991;
     protected int CURRENT_CAM = Util.USE_BACKGROUND_CAM;
     ImageView mImageView;
     PhotoViewAttacher mAttacher;
+    //private static Bitmap bgBitmap = null;
+    private BgBitmap bgBitmap = null;
     @ViewInject(R.id.camera_preview)
     private AspectRatioLayout preview;
     @ViewInject(R.id.toolbar)
     private Toolbar toolbar;
+    @ViewInject(R.id.seekBar_bg)
+    private SeekBar seekBarBg;
+    @ViewInject(R.id.progressbar)
+    private fr.castorflex.android.smoothprogressbar.SmoothProgressBar progressBar;
+    Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == SHOW_PB) {
+                if (!progressBar.isShown()) {
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+            } else if (msg.what == HIDE_PB) {
+                if (progressBar.isShown()) {
+                    progressBar.setVisibility(View.GONE);
+                }
+
+            }
+            super.handleMessage(msg);
+        }
+
+
+    };
     private Camera mCamera;
     private CameraPreview mPreview;
-    //private BgView bgView;
-    //private ImageButton captureButton;
-    //private ImageButton frontbackButton;
-    private int RESULT_LOAD_IMAGE = 1989;
-    private boolean isMerger = false;
-    //private Camera.Parameters parameters = null;
+    private boolean isMerger = true;
+    private boolean isGrey = false;
+    private int bgOpac = 100;
 
+    //private Camera.Parameters parameters = null;
+    private Uri bgUri = null;
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
 
         @Override
@@ -96,7 +126,7 @@ public class MainActivity extends BaseActivity {
                 Bitmap bitmap = Util.Bytes2Bimap(data);
                 bitmap = Util.rotate(bitmap, rotation);
                 if (isMerger) {
-                    bitmap = Util.toConformBitmap(bgBitmap, bitmap);
+                    bitmap = Util.toConformBitmap(bgBitmap.getBm(), bitmap);
                 }
 
                 FileOutputStream fos = new FileOutputStream(pictureFile);
@@ -183,6 +213,25 @@ public class MainActivity extends BaseActivity {
 
         return sizeMap;
     }
+/*
+    public void setCameraDisplayOrientation() {
+
+        mCamera.setDisplayOrientation(0);
+
+
+
+
+        mCamera.setParameters(parameters);
+
+        // se haya hecho o no el cambio de mpx
+        // ajusto el contenedor de la cámara al aspecto seleccionado
+        float ratio = (float) width / height;
+        aspectRatioLayout = (AspectRatioLayout) rootView.findViewById(R.id.camera_frame);
+        aspectRatioLayout.setAspectRatio(ratio);
+
+        //startPreview();
+    }
+*/
 
     private android.hardware.Camera.Parameters getPara(Camera.Parameters parameters, int width, int height, int previewWidth, int previewHeight) {
         // Cambio la resolución entre 2 y 3 mpx
@@ -211,25 +260,6 @@ public class MainActivity extends BaseActivity {
         //setCameraDisplayOrientation();
         return parameters;
     }
-/*
-    public void setCameraDisplayOrientation() {
-
-        mCamera.setDisplayOrientation(0);
-
-
-
-
-        mCamera.setParameters(parameters);
-
-        // se haya hecho o no el cambio de mpx
-        // ajusto el contenedor de la cámara al aspecto seleccionado
-        float ratio = (float) width / height;
-        aspectRatioLayout = (AspectRatioLayout) rootView.findViewById(R.id.camera_frame);
-        aspectRatioLayout.setAspectRatio(ratio);
-
-        //startPreview();
-    }
-*/
 
     public Camera getCameraInstance() {
         Camera c = null;
@@ -291,13 +321,13 @@ public class MainActivity extends BaseActivity {
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_main);
         //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //progressBar.setVisibility(View.GONE);
         //preview = (AspectRatioLayout) findViewById(R.id.camera_preview);
         // Create an instance of Camera
         mCamera = getCameraInstance();
@@ -323,12 +353,48 @@ public class MainActivity extends BaseActivity {
 
     }
 
-    @Event(R.id.button_frontback)
+    @Event(value = R.id.checkBox_grey, type = CheckBox.OnCheckedChangeListener.class)
+    private void onCheckGreyMode(CompoundButton button, boolean isChecked) {
+
+        isGrey = isChecked;
+        //seekBarBg.setEnabled(!isGrey);
+        if (bgBitmap != null) {
+            bgBitmap.setGrey(isChecked);
+            updateBgBitmap();
+        }
+
+
+    }
+
+    @Event(value = R.id.checkBox_merge, type = CheckBox.OnCheckedChangeListener.class)
+    private void onCheckMerge(CompoundButton button, boolean isChecked) {
+        isMerger = isChecked;
+    }
+
+    @Event(value = R.id.seekBar_bg, type = android.widget.SeekBar.OnSeekBarChangeListener.class, method = "onProgressChanged")
+    private void onBgProgressChanged(SeekBar seekBar, int progress,
+                                     boolean fromUser) {
+        bgOpac = progress;
+        if (bgBitmap != null) {
+            bgBitmap.setOpac(progress);
+            updateBgBitmap();
+        }
+
+    }
+
+    @Event(R.id.button_pickpic)
+    private void clickPickPic(View view) {
+        Intent choosePictureIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(choosePictureIntent, RESULT_LOAD_IMAGE);
+
+    }
+
+    @Event(R.id.button_capture)
     private void clickCapture(View view) {
         mCamera.takePicture(null, null, mPicture);
 
     }
-
 
     @Event(R.id.button_frontback)
     private void clickChangeFrontBack(View view) {
@@ -345,7 +411,6 @@ public class MainActivity extends BaseActivity {
 
 
     }
-
 
     @Override
     protected void onResume() {
@@ -397,9 +462,9 @@ public class MainActivity extends BaseActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-       /* if (id == R.id.action_settings) {
+        if (id == R.id.action_settings) {
             return true;
-        } else */
+        } /*else
         if (id == R.id.load_background) {
             Intent choosePictureIntent = new Intent(Intent.ACTION_PICK,
                     android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -411,13 +476,28 @@ public class MainActivity extends BaseActivity {
             else item.setChecked(true);
             isMerger = item.isChecked();
             return true;
-        }
+        }*/
 
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
+    private void loadBgBitmap() {
+        if (!progressBar.isShown()) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        Thread t = new Thread(new LoadBitmapRunnable());
+        t.start();
+    }
 
+    private void updateBgBitmap() {
+        if (!progressBar.isShown()) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        Thread t = new Thread(new adjustBitmapRunnable());
+        t.start();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -426,19 +506,13 @@ public class MainActivity extends BaseActivity {
 
             if (data != null) {
 
-                Uri dataUri = data.getData();
+                bgUri = data.getData();
                 // Bitmap bitmap = null;
                 try {
-                    bgBitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), dataUri);
-                    bgBitmap = Util.compress(bgBitmap);
-                    //bgBitmap = Util.adjustOpacity(bgBitmap, 101);
-                    Bitmap mBitmap = bgBitmap;
-                    mBitmap = Util.adjustOpacity(mBitmap, 101);
-                    //mBitmap=Util.gray2Binary(mBitmap);
-                    mImageView.setImageBitmap(mBitmap);
-                    //mImageView.getBackground().setAlpha(100);
-                    mAttacher.update();
-                } catch (IOException e) {
+
+                    loadBgBitmap();
+
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -475,5 +549,59 @@ public class MainActivity extends BaseActivity {
             }
         }
         return -1;
+    }
+
+    public class LoadBitmapRunnable implements Runnable {
+
+        @Override
+        public void run() {
+
+
+            try {
+
+                //bgBitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), bgUri);
+                bgBitmap = new BgBitmap(MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), bgUri));
+                updateBgBitmap();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+                /*
+         * Code you want to run on the thread goes here
+         */
+        }
+
+    }
+
+    public class adjustBitmapRunnable implements Runnable {
+        /*Bitmap bitmap;
+        public adjustBitmapRunnable(Bitmap bitmap){
+            this.bitmap=bitmap;
+        }*/
+
+        @Override
+        public void run() {
+
+            try {
+                if (bgBitmap != null) {
+                    Bitmap mBitmap = bgBitmap.getShowBitmap();
+                    //bgBitmap.setOpac(bgOpac);
+                    // mBitmap = Util.adjustOpacity(mBitmap, bgOpac);
+                    mImageView.setImageBitmap(mBitmap);
+                    mAttacher.update();
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Message msg = mHandler.obtainMessage();
+            msg.what = HIDE_PB;
+            msg.sendToTarget();
+
+                /*
+         * Code you want to run on the thread goes here
+         */
+        }
+
     }
 }
