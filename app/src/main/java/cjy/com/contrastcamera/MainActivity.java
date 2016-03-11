@@ -46,8 +46,8 @@ public class MainActivity extends BaseActivity {
     private static int SHOW_PB = 1990;
     private static int HIDE_PB = 1991;
     protected int CURRENT_CAM = Util.USE_BACKGROUND_CAM;
-    ImageView mImageView;
-    PhotoViewAttacher mAttacher;
+    private ImageView mImageView;
+    private PhotoViewAttacher mAttacher;
     //private static Bitmap bgBitmap = null;
     private BgBitmap bgBitmap = null;
     @ViewInject(R.id.camera_preview)
@@ -58,6 +58,8 @@ public class MainActivity extends BaseActivity {
     private SeekBar seekBarBg;
     @ViewInject(R.id.progressbar)
     private fr.castorflex.android.smoothprogressbar.SmoothProgressBar progressBar;
+
+
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -79,11 +81,11 @@ public class MainActivity extends BaseActivity {
     private Camera mCamera;
     private CameraPreview mPreview;
     private boolean isMerger = true;
-    private boolean isGrey = false;
-    private int bgOpac = 100;
+    //private boolean isGrey = false;
+    //private int bgOpac = 100;
 
     //private Camera.Parameters parameters = null;
-    private Uri bgUri = null;
+    //private Uri bgUri = null;
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
 
         @Override
@@ -145,9 +147,9 @@ public class MainActivity extends BaseActivity {
                 resumeCamera();
 
             } catch (FileNotFoundException e) {
-                Logger.wtf("File not found: " + e.getMessage());
+                Logger.e("File not found: " + e.getMessage());
             } catch (IOException e) {
-                Logger.wtf("Error accessing file: " + e.getMessage());
+                Logger.e("Error accessing file: " + e.getMessage());
             }
         }
     };
@@ -355,9 +357,6 @@ public class MainActivity extends BaseActivity {
 
     @Event(value = R.id.checkBox_grey, type = CheckBox.OnCheckedChangeListener.class)
     private void onCheckGreyMode(CompoundButton button, boolean isChecked) {
-
-        isGrey = isChecked;
-        //seekBarBg.setEnabled(!isGrey);
         if (bgBitmap != null) {
             bgBitmap.setGrey(isChecked);
             updateBgBitmap();
@@ -374,7 +373,6 @@ public class MainActivity extends BaseActivity {
     @Event(value = R.id.seekBar_bg, type = android.widget.SeekBar.OnSeekBarChangeListener.class, method = "onProgressChanged")
     private void onBgProgressChanged(SeekBar seekBar, int progress,
                                      boolean fromUser) {
-        bgOpac = progress;
         if (bgBitmap != null) {
             bgBitmap.setOpac(progress);
             updateBgBitmap();
@@ -481,11 +479,11 @@ public class MainActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void loadBgBitmap() {
+    private void loadBgBitmap(Uri bgUri) {
         if (!progressBar.isShown()) {
             progressBar.setVisibility(View.VISIBLE);
         }
-        Thread t = new Thread(new LoadBitmapRunnable());
+        Thread t = new Thread(new LoadBitmapRunnable(bgUri));
         t.start();
     }
 
@@ -505,16 +503,7 @@ public class MainActivity extends BaseActivity {
 
 
             if (data != null) {
-
-                bgUri = data.getData();
-                // Bitmap bitmap = null;
-                try {
-
-                    loadBgBitmap();
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                loadBgBitmap(data.getData());
             }
 
         }
@@ -552,6 +541,11 @@ public class MainActivity extends BaseActivity {
     }
 
     public class LoadBitmapRunnable implements Runnable {
+        Uri bgUri = null;
+
+        public LoadBitmapRunnable(Uri bgUri) {
+            this.bgUri = bgUri;
+        }
 
         @Override
         public void run() {
@@ -565,9 +559,7 @@ public class MainActivity extends BaseActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-                /*
-         * Code you want to run on the thread goes here
-         */
+
         }
 
     }
@@ -584,8 +576,6 @@ public class MainActivity extends BaseActivity {
             try {
                 if (bgBitmap != null) {
                     Bitmap mBitmap = bgBitmap.getShowBitmap();
-                    //bgBitmap.setOpac(bgOpac);
-                    // mBitmap = Util.adjustOpacity(mBitmap, bgOpac);
                     mImageView.setImageBitmap(mBitmap);
                     mAttacher.update();
 
@@ -597,10 +587,6 @@ public class MainActivity extends BaseActivity {
             Message msg = mHandler.obtainMessage();
             msg.what = HIDE_PB;
             msg.sendToTarget();
-
-                /*
-         * Code you want to run on the thread goes here
-         */
         }
 
     }

@@ -1,7 +1,6 @@
 package cjy.com.contrastcamera;
 
 import android.graphics.Bitmap;
-import android.net.Uri;
 
 import com.orhanobut.logger.Logger;
 
@@ -11,7 +10,7 @@ import com.orhanobut.logger.Logger;
 public class BgBitmap {
     private Bitmap bm = null;
     private Bitmap greyBm = null;
-    private Uri bgUri = null;
+    //private Uri bgUri = null;
 
 
     private Bitmap compressBm = null;
@@ -40,20 +39,21 @@ public class BgBitmap {
 
     public Bitmap getShowBitmap() {
         Bitmap mBitmap;
-        if (isGrey)
+        if (isGrey) {
             mBitmap = getGreyBm();
-        else
+        } else {
             mBitmap = getCompressBm();
+        }
         if (opac != 255) {
             mBitmap = Util.adjustOpacity(mBitmap, opac);
         }
-
+        Logger.e(mBitmap.toString() + "   isGrey=" + isGrey + " opac=" + opac);
         return mBitmap;
 
     }
 
     public Bitmap getBm() {
-        return this.bm;
+        return bm;
     }
 
     public Bitmap getCompressBm() {
@@ -64,11 +64,10 @@ public class BgBitmap {
     }
 
     public Bitmap getGreyBm() {
-        if (this.greyBm == null) {
-            Logger.e("greybm==null");
+        if (greyBm == null) {
             greyBm = Util.gray2Binary(getCompressBm());
         }
-        return this.greyBm;
+        return greyBm;
     }
 
 
