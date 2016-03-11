@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -28,8 +27,6 @@ import org.xutils.view.annotation.Event;
 import org.xutils.view.annotation.ViewInject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +42,9 @@ public class MainActivity extends BaseActivity {
     private static int RESULT_LOAD_IMAGE = 1989;
     private static int SHOW_PB = 1990;
     private static int HIDE_PB = 1991;
+    private static int UPDATE_BM = 1992;
+
+
     protected int CURRENT_CAM = Util.USE_BACKGROUND_CAM;
     private ImageView mImageView;
     private PhotoViewAttacher mAttacher;
@@ -72,6 +72,12 @@ public class MainActivity extends BaseActivity {
                     progressBar.setVisibility(View.GONE);
                 }
 
+            } else if (msg.what == UPDATE_BM) {
+                if (msg.obj != null) {
+                    mImageView.setImageBitmap((Bitmap) msg.obj);
+                    mAttacher.update();
+                }
+
             }
             super.handleMessage(msg);
         }
@@ -81,6 +87,7 @@ public class MainActivity extends BaseActivity {
     private Camera mCamera;
     private CameraPreview mPreview;
     private boolean isMerger = true;
+    //private boolean threadRunning = false;
     //private boolean isGrey = false;
     //private int bgOpac = 100;
 
@@ -100,7 +107,6 @@ public class MainActivity extends BaseActivity {
             }
 
 
-            try {
 
                 /*
                 Display display = getWindowManager().getDefaultDisplay();
@@ -120,10 +126,30 @@ public class MainActivity extends BaseActivity {
                         break;
                 }
                 */
-                int rotation = 90;
-                if (CURRENT_CAM == Util.USE_FRONT_CAM) {
-                    rotation = 270;
-                }
+            int rotation = 90;
+            if (CURRENT_CAM == Util.USE_FRONT_CAM) {
+                rotation = 270;
+            }
+
+            try {
+                bgBitmap.genPhoto(data, pictureFile, rotation, isMerger, new BgBitmap.genPhotoListener() {
+                    @Override
+                    public void genPhotoDone(File file) {
+                        Snackbar.make(preview, file.getAbsolutePath(), Snackbar.LENGTH_SHORT)
+                                .setAction("Ok", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                    }
+                                })
+                                .show();
+                        resumeCamera();
+                    }
+                });
+            } catch (IOException e) {
+                Logger.e(e.getMessage());
+            }
+
+            /*
                 //Logger.e(rotation+" "+CURRENT_CAM+" "+Util.USE_FRONT_CAM);
                 Bitmap bitmap = Util.Bytes2Bimap(data);
                 bitmap = Util.rotate(bitmap, rotation);
@@ -144,13 +170,9 @@ public class MainActivity extends BaseActivity {
                             }
                         })
                         .show();
-                resumeCamera();
+                resumeCamera();*/
 
-            } catch (FileNotFoundException e) {
-                Logger.e("File not found: " + e.getMessage());
-            } catch (IOException e) {
-                Logger.e("Error accessing file: " + e.getMessage());
-            }
+
         }
     };
 
@@ -334,20 +356,13 @@ public class MainActivity extends BaseActivity {
         // Create an instance of Camera
         mCamera = getCameraInstance();
         if (mCamera != null) {
-            //Camera.Parameters parameters = mCamera.getParameters();
-            // Create our Preview view and set it as the content of our activity.
             mPreview = new CameraPreview(this, mCamera);
-            // TextView tv=(TextView) findViewById(R.id.relative_view).findViewById(R.id.textView);
-            //tv.setText("fffffsdfsdfds");
 
-            //preview.addView(mPreview);
             mImageView = new ImageView(this);
+            mImageView.setScaleType(ImageView.ScaleType.FIT_XY);
             preview.addView(mPreview, 0);
             preview.addView(mImageView, 1);
-            // Set the Drawable displayed
-            //Drawable bitmap = getResources().getDrawable(R.drawable.wallpaper);
 
-            // Attach a PhotoViewAttacher, which takes care of all of the zooming functionality.
             mAttacher = new PhotoViewAttacher(mImageView);
 
 
@@ -480,19 +495,58 @@ public class MainActivity extends BaseActivity {
     }
 
     private void loadBgBitmap(Uri bgUri) {
+
         if (!progressBar.isShown()) {
             progressBar.setVisibility(View.VISIBLE);
         }
-        Thread t = new Thread(new LoadBitmapRunnable(bgUri));
-        t.start();
+
+        bgBitmap = new BgBitmap(MainActivity.this, bgUri);
+        bgBitmap.loadBitmap(new BgBitmap.loadBitmapListener() {
+            @Override
+            public void loadBitmapDone() {
+
+                updateBgBitmap();
+
+
+            }
+        });
+
+
+        //Thread t = new Thread(new LoadBitmapRunnable(bgUri));
+        // t.start();
     }
 
     private void updateBgBitmap() {
+
         if (!progressBar.isShown()) {
             progressBar.setVisibility(View.VISIBLE);
         }
+
+
+        bgBitmap.getShowBitmap(new BgBitmap.getShowBitmapListener() {
+            @Override
+            public void getShowBitmapDone(Bitmap bitmap) {
+                // mImageView.setImageBitmap(bitmap);
+                //mAttacher.update();
+
+                Message msg = mHandler.obtainMessage();
+
+                msg.what = UPDATE_BM;
+                msg.obj = bitmap;
+                msg.sendToTarget();
+
+                Message msg1 = mHandler.obtainMessage();
+                msg1.what = HIDE_PB;
+                msg1.sendToTarget();
+
+            }
+        });
+
+
+
+        /*
         Thread t = new Thread(new adjustBitmapRunnable());
-        t.start();
+        t.start();*/
     }
 
     @Override
@@ -539,7 +593,7 @@ public class MainActivity extends BaseActivity {
         }
         return -1;
     }
-
+/*
     public class LoadBitmapRunnable implements Runnable {
         Uri bgUri = null;
 
@@ -551,24 +605,33 @@ public class MainActivity extends BaseActivity {
         public void run() {
 
 
-            try {
+
 
                 //bgBitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), bgUri);
-                bgBitmap = new BgBitmap(MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), bgUri));
+               bgBitmap = new BgBitmap(MainActivity.this, bgUri, new BgBitmapImpl() {
+                   @Override
+                   public void initDone() {
+
+                   }
+
+                   @Override
+                   public void getCompressBm(Bitmap bitmap) {
+
+                   }
+               }));
+
+                threadRunning = false;
                 updateBgBitmap();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+
 
         }
 
     }
-
+*/
+    /*
     public class adjustBitmapRunnable implements Runnable {
-        /*Bitmap bitmap;
-        public adjustBitmapRunnable(Bitmap bitmap){
-            this.bitmap=bitmap;
-        }*/
+
 
         @Override
         public void run() {
@@ -579,6 +642,7 @@ public class MainActivity extends BaseActivity {
                     mImageView.setImageBitmap(mBitmap);
                     mAttacher.update();
 
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -587,7 +651,8 @@ public class MainActivity extends BaseActivity {
             Message msg = mHandler.obtainMessage();
             msg.what = HIDE_PB;
             msg.sendToTarget();
+            threadRunning = false;
         }
 
-    }
+    }*/
 }
