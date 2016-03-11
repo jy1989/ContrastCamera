@@ -132,6 +132,9 @@ public class MainActivity extends BaseActivity {
             }
 
             try {
+                if (bgBitmap == null) {
+                    bgBitmap = new BgBitmap(null, null);
+                }
                 bgBitmap.genPhoto(data, pictureFile, rotation, isMerger, new BgBitmap.genPhotoListener() {
                     @Override
                     public void genPhotoDone(File file) {

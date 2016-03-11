@@ -206,7 +206,7 @@ public class BgBitmap {
                 threadRunning = true;
                 Bitmap bitmap = Util.Bytes2Bimap(data);
                 bitmap = Util.rotate(bitmap, rotation);
-                if (isMerger) {
+                if (isMerger && bm != null) {
                     bitmap = Util.toConformBitmap(bm, bitmap);
                 }
                 try {
