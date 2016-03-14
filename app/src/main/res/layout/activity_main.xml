@@ -18,6 +18,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
+
         <fr.castorflex.android.smoothprogressbar.SmoothProgressBar xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/progressbar"
@@ -112,7 +113,7 @@
                 android:layout_weight="1"
                 android:background="#00ffffff"
                 android:scaleType="fitCenter"
-                android:src="@mipmap/old_time_camera" />
+                android:src="@mipmap/old_camera" />
 
             <ImageButton
                 android:id="@+id/button_pickpic"
@@ -121,7 +122,7 @@
                 android:layout_weight="1"
                 android:background="#00ffffff"
                 android:scaleType="fitCenter"
-                android:src="@mipmap/gallery" />
+                android:src="@mipmap/gallery_w" />
 
 
         </LinearLayout>

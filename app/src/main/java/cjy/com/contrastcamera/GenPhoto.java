@@ -35,7 +35,7 @@ public class GenPhoto {
                     FileOutputStream fos = new FileOutputStream(file);
                     fos.write(Util.Bitmap2Bytes(bitmap));
                     fos.close();
-                    listener.genPhotoDone(file);
+                    listener.genPhotoDone(file, bitmap);
                 } catch (IOException e) {
                     Logger.e(e.getMessage());
                 }
@@ -49,7 +49,7 @@ public class GenPhoto {
     public interface genPhotoListener {
         void genPhotoStart();
 
-        void genPhotoDone(File file);
+        void genPhotoDone(File file, Bitmap bm);
     }
 
 }

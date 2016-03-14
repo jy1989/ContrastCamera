@@ -47,6 +47,7 @@ public class MainActivity extends BaseActivity {
     private static int UPDATE_BM = 1992;
     private static int SHOW_MESSAGE = 1993;
     private static int BUTTON_SET_DEFAULT = 1994;
+    private static int RESTART_CAM = 1995;
 
 
     protected int CURRENT_CAM = Util.USE_BACKGROUND_CAM;
@@ -65,8 +66,8 @@ public class MainActivity extends BaseActivity {
     private fr.castorflex.android.smoothprogressbar.SmoothProgressBar progressBar;
     @ViewInject(R.id.checkBox_grey)
     private CheckBox checkBoxGrey;
-
-
+    private Camera mCamera;
+    private CameraPreview mPreview;
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -99,14 +100,16 @@ public class MainActivity extends BaseActivity {
             } else if (msg.what == BUTTON_SET_DEFAULT) {
                 seekBarBg.setProgress(100);
                 checkBoxGrey.setChecked(false);
+            } else if (msg.what == RESTART_CAM) {
+
+                releaseCamera();
+                resumeCamera();
             }
             super.handleMessage(msg);
         }
 
 
     };
-    private Camera mCamera;
-    private CameraPreview mPreview;
     private boolean isMerger = true;
     //private boolean threadRunning = false;
     //private boolean isGrey = false;
@@ -174,19 +177,25 @@ public class MainActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void genPhotoDone(File file) {
+                    public void genPhotoDone(File file, Bitmap bitmap) {
 
-                        resumeCamera();
+                        Message restartMessage = mHandler.obtainMessage();
+                        restartMessage.what = RESTART_CAM;
+                        restartMessage.sendToTarget();
 
+
+                        String sendmessage = getString(R.string.gening_success) + file.getPath();
                         Message msgShow = mHandler.obtainMessage();
                         msgShow.what = SHOW_MESSAGE;
-                        msgShow.obj = getString(R.string.gening_success) + file.getAbsolutePath();
+                        msgShow.obj = sendmessage;
                         msgShow.sendToTarget();
 
 
                         Message msg = mHandler.obtainMessage();
                         msg.what = HIDE_PB;
                         msg.sendToTarget();
+
+
                     }
                 });
 
