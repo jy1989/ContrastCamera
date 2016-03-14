@@ -87,7 +87,6 @@ public class BgBitmap {
                         public void run() {
                             threadRunning = true;
                             Bitmap mBitmap = Util.adjustOpacity(bitmap, opac);
-                            mBitmap = Util.adjustOpacity(mBitmap, opac);
                             threadRunning = false;
                             listener.getShowBitmapDone(mBitmap);
                         }
@@ -113,7 +112,6 @@ public class BgBitmap {
                         public void run() {
                             threadRunning = true;
                             Bitmap mBitmap = Util.adjustOpacity(bitmap, opac);
-                            mBitmap = Util.adjustOpacity(mBitmap, opac);
                             threadRunning = false;
                             listener.getShowBitmapDone(mBitmap);
                         }

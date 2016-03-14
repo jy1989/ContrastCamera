@@ -86,6 +86,7 @@
                 android:indeterminate="false"
                 android:longClickable="false"
                 android:max="255"
+
                 android:progress="100" />
         </LinearLayout>
 

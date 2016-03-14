@@ -46,13 +46,14 @@ public class MainActivity extends BaseActivity {
     private static int HIDE_PB = 1991;
     private static int UPDATE_BM = 1992;
     private static int SHOW_MESSAGE = 1993;
+    private static int BUTTON_SET_DEFAULT = 1994;
 
 
     protected int CURRENT_CAM = Util.USE_BACKGROUND_CAM;
     GenPhoto gp;
     private ImageView mImageView;
     private PhotoViewAttacher mAttacher;
-    //private static Bitmap bgBitmap = null;
+
     private BgBitmap bgBitmap = null;
     @ViewInject(R.id.camera_preview)
     private AspectRatioLayout preview;
@@ -62,6 +63,10 @@ public class MainActivity extends BaseActivity {
     private SeekBar seekBarBg;
     @ViewInject(R.id.progressbar)
     private fr.castorflex.android.smoothprogressbar.SmoothProgressBar progressBar;
+    @ViewInject(R.id.checkBox_grey)
+    private CheckBox checkBoxGrey;
+
+
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -91,6 +96,9 @@ public class MainActivity extends BaseActivity {
                     Snackbar.make(preview, (String) msg.obj, Snackbar.LENGTH_LONG).show();
                 }
 
+            } else if (msg.what == BUTTON_SET_DEFAULT) {
+                seekBarBg.setProgress(100);
+                checkBoxGrey.setChecked(false);
             }
             super.handleMessage(msg);
         }
@@ -555,6 +563,10 @@ public class MainActivity extends BaseActivity {
             @Override
             public void loadBitmapDone() {
 
+                Message msg = mHandler.obtainMessage();
+                msg.what = BUTTON_SET_DEFAULT;
+                msg.sendToTarget();
+
                 updateBgBitmap();
 
 
@@ -579,8 +591,7 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void getShowBitmapDone(Bitmap bitmap) {
-                // mImageView.setImageBitmap(bitmap);
-                //mAttacher.update();
+
 
                 Message msg = mHandler.obtainMessage();
 
@@ -596,10 +607,6 @@ public class MainActivity extends BaseActivity {
         });
 
 
-
-        /*
-        Thread t = new Thread(new adjustBitmapRunnable());
-        t.start();*/
     }
 
     @Override
@@ -646,66 +653,5 @@ public class MainActivity extends BaseActivity {
         }
         return -1;
     }
-/*
-    public class LoadBitmapRunnable implements Runnable {
-        Uri bgUri = null;
 
-        public LoadBitmapRunnable(Uri bgUri) {
-            this.bgUri = bgUri;
-        }
-
-        @Override
-        public void run() {
-
-
-
-
-                //bgBitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), bgUri);
-               bgBitmap = new BgBitmap(MainActivity.this, bgUri, new BgBitmapImpl() {
-                   @Override
-                   public void initDone() {
-
-                   }
-
-                   @Override
-                   public void getCompressBm(Bitmap bitmap) {
-
-                   }
-               }));
-
-                threadRunning = false;
-                updateBgBitmap();
-
-
-
-        }
-
-    }
-*/
-    /*
-    public class adjustBitmapRunnable implements Runnable {
-
-
-        @Override
-        public void run() {
-
-            try {
-                if (bgBitmap != null) {
-                    Bitmap mBitmap = bgBitmap.getShowBitmap();
-                    mImageView.setImageBitmap(mBitmap);
-                    mAttacher.update();
-
-
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            Message msg = mHandler.obtainMessage();
-            msg.what = HIDE_PB;
-            msg.sendToTarget();
-            threadRunning = false;
-        }
-
-    }*/
 }
