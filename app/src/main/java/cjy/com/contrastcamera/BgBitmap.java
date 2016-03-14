@@ -5,10 +5,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 
-import com.orhanobut.logger.Logger;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -18,7 +14,7 @@ public class BgBitmap {
     private Uri uri;
     private Activity act;
     private Bitmap bm = null;
-    private Bitmap greyBm = null;//private Uri bgUri = null;
+    private Bitmap greyBm = null;
     private Bitmap compressBm = null;
     private int opac = 100;
     private boolean isGrey = false;
@@ -32,6 +28,7 @@ public class BgBitmap {
     }
 
     public void loadBitmap(final loadBitmapListener listener) {
+        listener.loadBitmapStart();
         if (threadRunning) {
             return;
         }
@@ -70,11 +67,17 @@ public class BgBitmap {
     }
 
     public void getShowBitmap(final getShowBitmapListener listener) {
+        listener.getShowBitmapStart();
         if (threadRunning) {
             return;
         }
         if (isGrey) {
             getGreyBm(new getGreyBmListener() {
+                @Override
+                public void getGreyBmStart() {
+
+                }
+
                 @Override
                 public void getGreyBmDone(final Bitmap bitmap) {
 
@@ -97,6 +100,11 @@ public class BgBitmap {
 
         } else {
             getCompressBm(new getCompressBmListener() {
+                @Override
+                public void getCompressStart() {
+
+                }
+
                 @Override
                 public void getCompressBmDone(final Bitmap bitmap) {
                     //final Bitmap bitmap1 = bitmap;
@@ -123,9 +131,9 @@ public class BgBitmap {
         return bm;
     }
 
-    public void getCompressBm(final getCompressBmListener linstener) {
+    public void getCompressBm(final getCompressBmListener listener) {
 
-
+        listener.getCompressStart();
         if (compressBm == null) {
             if (threadRunning) {
                 return;
@@ -138,7 +146,7 @@ public class BgBitmap {
                     try {
                         compressBm = Util.compressImage(bm);//
                         threadRunning = false;
-                        linstener.getCompressBmDone(compressBm);
+                        listener.getCompressBmDone(compressBm);
                     } catch (Exception e) {
 
                     }
@@ -146,23 +154,24 @@ public class BgBitmap {
                 }
             }).start();
         } else {
-            linstener.getCompressBmDone(compressBm);
+            listener.getCompressBmDone(compressBm);
         }
-/*
-        if (compressBm == null) {
-            compressBm = Util.compressImage(bm);
-        }
-        return compressBm;*/
+
     }
 
     public void getGreyBm(final getGreyBmListener listener) {
 
-
+        listener.getGreyBmStart();
         if (greyBm == null) {
             if (threadRunning) {
                 return;
             }
             getCompressBm(new getCompressBmListener() {
+                @Override
+                public void getCompressStart() {
+
+                }
+
                 @Override
                 public void getCompressBmDone(Bitmap bitmap) {
 
@@ -192,59 +201,32 @@ public class BgBitmap {
 
         }
 
-
-        //return greyBm;
     }
-
-    public void genPhoto(final byte[] data, final File file, final int rotation, final boolean isMerger, final genPhotoListener listener) throws IOException {
-        if (threadRunning) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                threadRunning = true;
-                Bitmap bitmap = Util.Bytes2Bimap(data);
-                bitmap = Util.rotate(bitmap, rotation);
-                if (isMerger && bm != null) {
-                    bitmap = Util.toConformBitmap(bm, bitmap);
-                }
-                try {
-                    FileOutputStream fos = new FileOutputStream(file);
-
-                    fos.write(Util.Bitmap2Bytes(bitmap));
-                    fos.close();
-                    listener.genPhotoDone(file);
-                } catch (IOException e) {
-                    Logger.e(e.getMessage());
-                }
-                threadRunning = false;
-            }
-        }).start();
-
-
-    }
-
 
     public interface loadBitmapListener {
+        void loadBitmapStart();
+
         void loadBitmapDone();
     }
 
     public interface getCompressBmListener {
+        void getCompressStart();
+
         void getCompressBmDone(Bitmap bitmap);
     }
 
     public interface getGreyBmListener {
+        void getGreyBmStart();
+
         void getGreyBmDone(Bitmap bitmap);
     }
 
     public interface getShowBitmapListener {
+        void getShowBitmapStart();
+
         void getShowBitmapDone(Bitmap bitmap);
 
     }
 
-    public interface genPhotoListener {
-        void genPhotoDone(File file);
-    }
 
 }

@@ -46,6 +46,7 @@ public class MainActivity extends BaseActivity {
 
 
     protected int CURRENT_CAM = Util.USE_BACKGROUND_CAM;
+    GenPhoto gp;
     private ImageView mImageView;
     private PhotoViewAttacher mAttacher;
     //private static Bitmap bgBitmap = null;
@@ -58,8 +59,6 @@ public class MainActivity extends BaseActivity {
     private SeekBar seekBarBg;
     @ViewInject(R.id.progressbar)
     private fr.castorflex.android.smoothprogressbar.SmoothProgressBar progressBar;
-
-
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -98,7 +97,7 @@ public class MainActivity extends BaseActivity {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
 
-            Snackbar.make(preview, "gening!!", Snackbar.LENGTH_LONG).show();
+
 
             File pictureFile = Util.getOutputMediaFile(Util.MEDIA_TYPE_IMAGE);
             if (pictureFile == null) {
@@ -132,22 +131,33 @@ public class MainActivity extends BaseActivity {
             }
 
             try {
-                if (bgBitmap == null) {
-                    bgBitmap = new BgBitmap(null, null);
+
+                Bitmap mBitmap = null;
+                if (bgBitmap != null) {
+                    mBitmap = bgBitmap.getBm();
                 }
-                bgBitmap.genPhoto(data, pictureFile, rotation, isMerger, new BgBitmap.genPhotoListener() {
+
+                gp.genPhoto(mBitmap, data, pictureFile, rotation, isMerger, new GenPhoto.genPhotoListener() {
+                    @Override
+                    public void genPhotoStart() {
+                        Snackbar.make(preview, "gening!!", Snackbar.LENGTH_LONG).show();
+
+                        Message msg = mHandler.obtainMessage();
+                        msg.what = SHOW_PB;
+                        msg.sendToTarget();
+                    }
+
                     @Override
                     public void genPhotoDone(File file) {
-                        Snackbar.make(preview, file.getAbsolutePath(), Snackbar.LENGTH_SHORT)
-                                .setAction("Ok", new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                    }
-                                })
-                                .show();
+                        Snackbar.make(preview, file.getAbsolutePath(), Snackbar.LENGTH_LONG).show();
                         resumeCamera();
+
+                        Message msg = mHandler.obtainMessage();
+                        msg.what = HIDE_PB;
+                        msg.sendToTarget();
                     }
                 });
+
             } catch (IOException e) {
                 Logger.e(e.getMessage());
             }
@@ -268,17 +278,20 @@ public class MainActivity extends BaseActivity {
         // autofocus
         try {
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+            parameters.setSceneMode(Camera.Parameters.SCENE_MODE_AUTO);
+            parameters.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_AUTO);
         } catch (Exception e) {
-            Logger.e("No tengo autofocus");
+            //Logger.e("No tengo autofocus");
             Logger.e(Log.getStackTraceString(e));
         }
         // 90 grados en portrait
         //mCamera.setDisplayOrientation(90);
 
         // jpg 80 de calidad
-        parameters.setJpegQuality(70);
+        parameters.setJpegQuality(80);
         parameters.setPictureSize(width, height);
         parameters.setPreviewSize(previewWidth, previewHeight);
+
 
         //Logger.e("picture size: " + parameters.getPictureSize().width + "x" + parameters.getPictureSize().height);
         //Logger.e("preview size: " + parameters.getPreviewSize().width + "x" + parameters.getPreviewSize().height);
@@ -370,6 +383,7 @@ public class MainActivity extends BaseActivity {
 
 
         }
+        gp = new GenPhoto();
 
     }
 
@@ -499,12 +513,16 @@ public class MainActivity extends BaseActivity {
 
     private void loadBgBitmap(Uri bgUri) {
 
-        if (!progressBar.isShown()) {
-            progressBar.setVisibility(View.VISIBLE);
-        }
 
         bgBitmap = new BgBitmap(MainActivity.this, bgUri);
         bgBitmap.loadBitmap(new BgBitmap.loadBitmapListener() {
+            @Override
+            public void loadBitmapStart() {
+                Message msg = mHandler.obtainMessage();
+                msg.what = SHOW_PB;
+                msg.sendToTarget();
+            }
+
             @Override
             public void loadBitmapDone() {
 
@@ -521,12 +539,15 @@ public class MainActivity extends BaseActivity {
 
     private void updateBgBitmap() {
 
-        if (!progressBar.isShown()) {
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
 
         bgBitmap.getShowBitmap(new BgBitmap.getShowBitmapListener() {
+            @Override
+            public void getShowBitmapStart() {
+                Message msg = mHandler.obtainMessage();
+                msg.what = SHOW_PB;
+                msg.sendToTarget();
+            }
+
             @Override
             public void getShowBitmapDone(Bitmap bitmap) {
                 // mImageView.setImageBitmap(bitmap);

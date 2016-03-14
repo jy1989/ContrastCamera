@@ -129,7 +129,8 @@ public class Util {
         canvas.drawColor(colour, PorterDuff.Mode.DST_IN);
         return mutableBitmap;
     }
-    public static  Bitmap toConformBitmap(Bitmap background, Bitmap foreground) {
+
+    public static Bitmap mergerBitmap(Bitmap background, Bitmap foreground) {
 
 
         int bgWidth = background.getWidth();
@@ -137,7 +138,21 @@ public class Util {
         int fgWidth = foreground.getWidth();
         int fgHeight = foreground.getHeight();
         //create the new blank bitmap 创建一个新的和SRC长度宽度一样的位图
-        Bitmap newbmp = Bitmap.createBitmap(bgWidth+fgWidth, bgHeight, Bitmap.Config.ARGB_8888);
+
+        if (bgHeight > fgHeight) {
+            background = scale(background, 0, fgHeight);
+            bgWidth = background.getWidth();
+            bgHeight = background.getHeight();
+        } else if (bgHeight < fgHeight) {
+            foreground = scale(foreground, 0, bgHeight);
+            fgWidth = foreground.getWidth();
+            fgHeight = foreground.getHeight();
+        } else {
+
+        }
+
+
+        Bitmap newbmp = Bitmap.createBitmap(bgWidth + fgWidth, bgHeight, Bitmap.Config.ARGB_8888);
         Canvas cv = new Canvas(newbmp);
         //draw bg into
         cv.drawBitmap(background, 0, 0, null);//在 0，0坐标开始画入bg
@@ -150,6 +165,31 @@ public class Util {
         return newbmp;
     }
 
+
+    public static Bitmap scale(Bitmap bm, int w, int h) {
+
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+
+        if (w == 0) {
+            w = width * h / height;
+        } else if (h == 0) {
+            h = w * height / width;
+
+        }
+
+        // 计算缩放比例
+        float scaleWidth = ((float) w) / width;
+        float scaleHeight = ((float) h) / height;
+        // 取得想要缩放的matrix参数
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth, scaleHeight);
+        // 得到新的图片
+        Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
+                true);
+        return newbm;
+
+    }
 
     // 该函数实现对图像进行二值化处理
     public static Bitmap gray2Binary(Bitmap graymap) {
@@ -245,6 +285,7 @@ public class Util {
         c.drawBitmap(bmpOriginal, 0, 0, paint);
         return bmpGrayscale;
     }
+
     public static Bitmap bitmap2Gray(Bitmap bmSrc) {
         // 得到图片的长和宽
         int width = bmSrc.getWidth();
