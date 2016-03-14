@@ -1,6 +1,15 @@
 <resources>
-    <string name="app_name">ContrastCamera</string>
+    <string name="app_name">对比相机</string>
     <string name="action_settings">设置</string>
     <string name="load_background">读取背景</string>
-    <string name="merger_bg">合并</string>
+    <string name="merger_bg">合并图像</string>
+    <string name="grey">底图二值化</string>
+    <string name="about">关于</string>
+    <string name="aboutText">
+        compile \'com.commit451:PhotoView:1.2.4\'\n
+        compile \'com.github.orhanobut:logger:1.12\'\n
+        compile \'org.xutils:xutils:3.3.20\'\n
+        compile \'com.github.castorflex.smoothprogressbar:library:1.1.0\'</string>
+    <string name="gening">照片生成中</string>
+    <string name="gening_success">生成成功，路径：</string>
 </resources>

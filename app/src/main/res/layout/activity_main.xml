@@ -24,10 +24,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:indeterminate="true"
-            android:visibility="gone"
+
             app:spb_color="#FF0000"
             app:spb_mirror_mode="false"
-            app:spb_progressiveStart_activated="true"
+            app:spb_progressiveStart_activated="false"
             app:spb_progressiveStart_speed="1.5"
             app:spb_progressiveStop_speed="3.4"
             app:spb_reversed="false"
@@ -67,7 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:checked="false"
-                android:text="grey" />
+                android:text="@string/grey" />
 
             <CheckBox
                 android:id="@+id/checkBox_merge"
@@ -75,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:checked="true"
-                android:text="merge" />
+                android:text="@string/merger_bg" />
 
             <SeekBar
                 android:id="@+id/seekBar_bg"
@@ -98,29 +98,29 @@
             <ImageButton
                 android:id="@+id/button_frontback"
                 android:layout_width="55dp"
-                android:layout_height="40dp"
+                android:layout_height="36dp"
                 android:layout_weight="1"
                 android:background="#00ffffff"
                 android:scaleType="fitCenter"
-                android:src="@android:drawable/ic_menu_always_landscape_portrait" />
+                android:src="@mipmap/switch_camera" />
 
             <ImageButton
                 android:id="@+id/button_capture"
                 android:layout_width="55dp"
-                android:layout_height="40dp"
+                android:layout_height="36dp"
                 android:layout_weight="1"
                 android:background="#00ffffff"
                 android:scaleType="fitCenter"
-                android:src="@android:drawable/ic_menu_camera" />
+                android:src="@mipmap/old_time_camera" />
 
             <ImageButton
                 android:id="@+id/button_pickpic"
                 android:layout_width="55dp"
-                android:layout_height="40dp"
+                android:layout_height="36dp"
                 android:layout_weight="1"
                 android:background="#00ffffff"
                 android:scaleType="fitCenter"
-                android:src="@android:drawable/ic_menu_gallery" />
+                android:src="@mipmap/gallery" />
 
 
         </LinearLayout>

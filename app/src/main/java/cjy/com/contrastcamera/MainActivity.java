@@ -1,5 +1,7 @@
 package cjy.com.contrastcamera;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -43,6 +45,7 @@ public class MainActivity extends BaseActivity {
     private static int SHOW_PB = 1990;
     private static int HIDE_PB = 1991;
     private static int UPDATE_BM = 1992;
+    private static int SHOW_MESSAGE = 1993;
 
 
     protected int CURRENT_CAM = Util.USE_BACKGROUND_CAM;
@@ -63,18 +66,29 @@ public class MainActivity extends BaseActivity {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == SHOW_PB) {
-                if (!progressBar.isShown()) {
+                /*if (!progressBar.isShown()) {
+                    progressBar.setEnabled(true);
                     progressBar.setVisibility(View.VISIBLE);
-                }
+                }*/
+                progressBar.progressiveStart();
             } else if (msg.what == HIDE_PB) {
-                if (progressBar.isShown()) {
+               /* if (progressBar.isShown()) {
+
                     progressBar.setVisibility(View.GONE);
                 }
+*/
+                progressBar.progressiveStop();
+
 
             } else if (msg.what == UPDATE_BM) {
                 if (msg.obj != null) {
                     mImageView.setImageBitmap((Bitmap) msg.obj);
                     mAttacher.update();
+                }
+
+            } else if (msg.what == SHOW_MESSAGE) {
+                if (msg.obj != null) {
+                    Snackbar.make(preview, (String) msg.obj, Snackbar.LENGTH_LONG).show();
                 }
 
             }
@@ -96,7 +110,6 @@ public class MainActivity extends BaseActivity {
 
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
-
 
 
             File pictureFile = Util.getOutputMediaFile(Util.MEDIA_TYPE_IMAGE);
@@ -140,7 +153,12 @@ public class MainActivity extends BaseActivity {
                 gp.genPhoto(mBitmap, data, pictureFile, rotation, isMerger, new GenPhoto.genPhotoListener() {
                     @Override
                     public void genPhotoStart() {
-                        Snackbar.make(preview, "gening!!", Snackbar.LENGTH_LONG).show();
+
+                        Message msgShow = mHandler.obtainMessage();
+                        msgShow.what = SHOW_MESSAGE;
+                        msgShow.obj = getString(R.string.gening);
+                        msgShow.sendToTarget();
+
 
                         Message msg = mHandler.obtainMessage();
                         msg.what = SHOW_PB;
@@ -149,8 +167,14 @@ public class MainActivity extends BaseActivity {
 
                     @Override
                     public void genPhotoDone(File file) {
-                        Snackbar.make(preview, file.getAbsolutePath(), Snackbar.LENGTH_LONG).show();
+
                         resumeCamera();
+
+                        Message msgShow = mHandler.obtainMessage();
+                        msgShow.what = SHOW_MESSAGE;
+                        msgShow.obj = getString(R.string.gening_success) + file.getAbsolutePath();
+                        msgShow.sendToTarget();
+
 
                         Message msg = mHandler.obtainMessage();
                         msg.what = HIDE_PB;
@@ -384,7 +408,7 @@ public class MainActivity extends BaseActivity {
 
         }
         gp = new GenPhoto();
-
+        progressBar.progressiveStop();
     }
 
     @Event(value = R.id.checkBox_grey, type = CheckBox.OnCheckedChangeListener.class)
@@ -492,7 +516,12 @@ public class MainActivity extends BaseActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.about) {
+            Dialog alertDialog = new AlertDialog.Builder(this).
+                    setTitle(getString(R.string.about)).
+                    setMessage(getString(R.string.aboutText)).
+                    create();
+            alertDialog.show();
             return true;
         } /*else
         if (id == R.id.load_background) {
