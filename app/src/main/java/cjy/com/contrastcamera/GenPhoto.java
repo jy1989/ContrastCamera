@@ -31,10 +31,13 @@ public class GenPhoto {
                 if (isMerger && bgBitMap != null) {
                     bitmap = Util.mergerBitmap(bgBitMap, bitmap);
                 }
+                bitmap = Util.drawTextToBitmap(bitmap, "ContrastCamera");
                 try {
                     FileOutputStream fos = new FileOutputStream(file);
                     fos.write(Util.Bitmap2Bytes(bitmap));
                     fos.close();
+
+
                     listener.genPhotoDone(file, bitmap);
                 } catch (IOException e) {
                     Logger.e(e.getMessage());

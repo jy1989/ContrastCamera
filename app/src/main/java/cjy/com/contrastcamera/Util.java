@@ -3,11 +3,13 @@ package cjy.com.contrastcamera;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
@@ -225,6 +227,43 @@ public class Util {
             }
         }
         return binarymap;
+    }
+
+
+    public static Bitmap drawTextToBitmap(Bitmap bitmap, String gText) {
+        //Resources resources = gContext.getResources();
+        float scale = 1;
+
+        // resource bitmaps are imutable,
+        // so we need to convert it to mutable one
+        bitmap = bitmap.isMutable()
+                ? bitmap
+                : bitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+        //bitmap = bitmap.copy(bitmapConfig, true);
+
+        Canvas canvas = new Canvas(bitmap);
+        // new antialised Paint
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        // text color - #3D3D3D
+        paint.setColor(Color.rgb(255, 255, 255));
+        // text size in pixels
+        paint.setTextSize((int) (15 * scale));
+        // text shadow
+        paint.setShadowLayer(1f, 0f, 1f, Color.WHITE);
+
+        // draw text to the Canvas center
+        Rect bounds = new Rect();
+//      paint.setTextAlign(Align.CENTER);
+
+        paint.getTextBounds(gText, 0, gText.length(), bounds);
+        int x = (bitmap.getWidth() - bounds.width()) / 2;
+        int y = (bitmap.getHeight() - 100);
+
+//      canvas.drawText(gText, x * scale, y * scale, paint);
+        canvas.drawText(gText, x, y, paint);
+
+        return bitmap;
     }
 
     public static Bitmap lineGrey(Bitmap image) {
